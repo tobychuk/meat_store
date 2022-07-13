@@ -1,5 +1,5 @@
 from django.db import models
-
+from datetime import datetime
 # Create your models here.
 
 class Client(models.Model):
@@ -8,9 +8,9 @@ class Client(models.Model):
     middle_name = models.CharField("Отчество", max_length=15)
     phone_number = models.IntegerField("Телефонный номер")
     reserve_phone_number = models.IntegerField("Запасной телефонный номер", blank=True)
-    address = models.CharField("Адрес проживания")
-    passport_image_first = models.ImageField("Фото лицевой стороны паспорта")
-    passport_image_second = models.ImageField("Фото задней стороны паспорта")
+    address = models.CharField("Адрес проживания", max_length=100)
+    passport_image_first = models.ImageField("Фото лицевой стороны паспорта", upload_to='documents/')
+    passport_image_second = models.ImageField("Фото задней стороны паспорта", upload_to='documents/')
 
     class Meta:
         verbose_name = 'Клиент'
@@ -24,5 +24,13 @@ class Debt(models.Model):
     debtor = models.ForeignKey(Client, verbose_name='Должник', on_delete=models.CASCADE)
     quantity = models.IntegerField("Размер долга")
     amount_meat = models.SmallIntegerField("Количество мяса")
-    created = models.DateTimeField("Дата создания")
-    updated = models.DateTimeField("Обновлено")
+    created = models.DateField("Дата выдачи", default=datetime.today)
+    return_date = models.DateField("Дата возврата", blank=True, null=True)
+    updated = models.DateField("Обновлено", auto_now=True)
+
+    class Meta:
+        verbose_name = 'Долг'
+        verbose_name_plural = 'Долги'
+
+    def __str__(self):
+        return f"{self.debtor} - {self.quantity}"
