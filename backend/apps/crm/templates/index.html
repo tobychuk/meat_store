@@ -3,14 +3,10 @@
 {% block content %}
 <div class="col-12">
                 <div class="card">
-                  <div class="card-header">
-                    <h3 class="card-title">Календарь</h3>
-                  </div>
                   <div class="card-body border-bottom py-3">
                     <div class="d-flex">
-                      <div class="text-muted">
 
-                      </div>
+                        <h3 class="card-title">Календарь</h3>
                       <div class="ms-auto text-muted">
                         Search:
                         <div class="ms-2 d-inline-block">
@@ -25,33 +21,34 @@
                         <tr>
                           <th class="w-1"></th>
                           </th>
-                          <th>Invoice Subject</th>
-                          <th>Client</th>
-                          <th>VAT No.</th>
-                          <th>Created</th>
-                          <th>Status</th>
-                          <th>Price</th>
-                          <th></th>
+                          <th>Имя</th>
+                          <th>Номер телефона</th>
+                          <th>Размер долга</th>
+                          <th>Количество мяса</th>
+                          <th>Дата выдачи</th>
+                          <th>Дата возврата</th>
+                          <th>Статус</th>
                         </tr>
                       </thead>
                       <tbody>
+                        {% for debt in debts %}
                         <tr>
                           <td></td>
-                          <td><a href="invoice.html" class="text-reset" tabindex="-1">Design Works</a></td>
+                          <td><a href="invoice.html" class="text-reset" tabindex="-1">{{debt.debtor.last_name}}  {{debt.debtor.first_name}}</a></td>
                           <td>
-                            <span class="flag flag-country-us"></span>
-                            Carlson Limited
+                            {{debt.debtor.phone_number}}
                           </td>
                           <td>
-                            87956621
+                            {{debt.quantity}} сом
                           </td>
                           <td>
-                            15 Dec 2017
+                            {{ debt.amount_meat }} кг
                           </td>
                           <td>
                             <span class="badge bg-success me-1"></span> Paid
                           </td>
-                          <td>$887</td>
+                          <td>{{debt.created}}</td>
+                          <td>{{ debt.status}}</td>
                           <td class="text-end">
                             <span class="dropdown">
                               <button class="btn dropdown-toggle align-text-top" data-bs-boundary="viewport" data-bs-toggle="dropdown">Actions</button>
@@ -66,33 +63,64 @@
                             </span>
                           </td>
                         </tr>
+                        {% endfor %}
 
                       </tbody>
                     </table>
                   </div>
                   <div class="card-footer d-flex align-items-center">
-                    <p class="m-0 text-muted">Showing <span>1</span> to <span>8</span> of <span>16</span> entries</p>
-                    <ul class="pagination m-0 ms-auto">
-                      <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                          <!-- Download SVG icon from http://tabler-icons.io/i/chevron-left -->
-                          <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><polyline points="15 6 9 12 15 18" /></svg>
-                          prev
-                        </a>
-                      </li>
-                      <li class="page-item"><a class="page-link" href="#">1</a></li>
-                      <li class="page-item active"><a class="page-link" href="#">2</a></li>
-                      <li class="page-item"><a class="page-link" href="#">3</a></li>
-                      <li class="page-item"><a class="page-link" href="#">4</a></li>
-                      <li class="page-item"><a class="page-link" href="#">5</a></li>
-                      <li class="page-item">
-                        <a class="page-link" href="#">
-                          next <!-- Download SVG icon from http://tabler-icons.io/i/chevron-right -->
-                          <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><polyline points="9 6 15 12 9 18" /></svg>
-                        </a>
-                      </li>
-                    </ul>
+
                   </div>
+                  <ul class="pagination pagination-sm">
+
+                    {% for date in dates %}
+                      <li class="page-item {% if date == this_date  %} active {% endif %}"><a class="page-link" href="{% url 'datepage' date%}">{{ date }}</a></li>
+                    {% endfor %}
+                    </ul>
                 </div>
               </div>
+<br>
+<br>
+<br>
+<br>
+          <h1> Ближайшие долги</h1>
+            <div id="table-default">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th><button class="table-sort" data-sort="sort-name">Имя</button></th>
+                        <th><button class="table-sort" data-sort="sort-city">Номер телефона</button></th>
+                        <th><button class="table-sort" data-sort="sort-type">Размер долга</button></th>
+                        <th><button class="table-sort" data-sort="sort-score">Количество мяса</button></th>
+                        <th><button class="table-sort" data-sort="sort-date">Дата выдачи</button></th>
+                        <th><button class="table-sort" data-sort="sort-quantity">Дата возврата</button></th>
+                        <th><button class="table-sort" data-sort="sort-progress">Прогресс</button></th>
+                      </tr>
+                    </thead>
+                    <tbody class="table-tbody">
+                    {% for debt in burning_debts %}
+                      <tr>
+                        <td class="sort-name">{{debt.debtor.last_name}} {{debt.debtor.first_name}}</td>
+                        <td class="sort-city">{{debt.debtor.phone_number}}</td>
+                        <td class="sort-type">{{debt.quantity}} сом</td>
+                        <td class="sort-score">{{debt.amount_meat}} кг</td>
+                        <td class="sort-date">{{debt.created}}</td>
+                        <td class="sort-quantity">{{debt.return_date}}</td>
+                        <td class="sort-progress">
+                          <div class="row align-items-center">
+                            <div class="col-auto">{{debt.progress}}%</div>
+                            <div class="col">
+                              <div class="progress" style="width: 5rem">
+                                <div class="progress-bar" style="width: {{debt.progress}}%" role="progressbar" aria-valuenow="" aria-valuemin="0" aria-valuemax="100" aria-label=" Complete">
+                                  <span class="visually-hidden">90% Complete</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
 {% endblock %}

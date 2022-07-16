@@ -21,9 +21,17 @@ class Client(models.Model):
 
 
 class Debt(models.Model):
+    DEBT_STATUS_CHOICES = [
+        ('Не оплачен', 'Не оплачен'),
+        ('Частично оплачен', 'Частично оплачен'),
+        ('Оплачен', 'Оплачен'),
+        ('Просрочен', 'Просрочен')
+    ]
     debtor = models.ForeignKey(Client, verbose_name='Должник', on_delete=models.CASCADE)
     quantity = models.IntegerField("Размер долга")
     amount_meat = models.SmallIntegerField("Количество мяса")
+    status = models.CharField('Статус', max_length=40, choices=DEBT_STATUS_CHOICES, default=DEBT_STATUS_CHOICES[0])
+    progress = models.SmallIntegerField("Прогресс оплаты", default=0)
     created = models.DateField("Дата выдачи", default=datetime.today)
     return_date = models.DateField("Дата возврата", blank=True, null=True)
     updated = models.DateField("Обновлено", auto_now=True)
