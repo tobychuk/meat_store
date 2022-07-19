@@ -5,8 +5,13 @@
                 <div class="card">
                   <div class="card-body border-bottom py-3">
                     <div class="d-flex">
+                      <h3>Записи {% if is_index %} за все дни {% else %}на {{this_date}}{% endif %}</h3>
+                  <a href="#" class="btn btn-primary d-none d-sm-inline-block ms-auto" data-bs-toggle="modal" data-bs-target="#modal-report">
+                    <!-- Download SVG icon from http://tabler-icons.io/i/plus -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                    Добавить новый долг
+                  </a>
 
-                        <h3 class="card-title">Календарь</h3>
                       <div class="ms-auto text-muted">
                         Search:
                         <div class="ms-2 d-inline-block">
@@ -22,7 +27,6 @@
                           <th class="w-1"></th>
                           </th>
                           <th>Имя</th>
-                          <th>Номер телефона</th>
                           <th>Размер долга</th>
                           <th>Количество мяса</th>
                           <th>Дата выдачи</th>
@@ -36,33 +40,75 @@
                           <td></td>
                           <td><a href="invoice.html" class="text-reset" tabindex="-1">{{debt.debtor.last_name}}  {{debt.debtor.first_name}}</a></td>
                           <td>
-                            {{debt.debtor.phone_number}}
-                          </td>
-                          <td>
                             {{debt.quantity}} сом
                           </td>
                           <td>
                             {{ debt.amount_meat }} кг
                           </td>
-                          <td>
-                            <span class="badge bg-success me-1"></span> Paid
-                          </td>
                           <td>{{debt.created}}</td>
-                          <td>{{ debt.status}}</td>
+                          <td>{{debt.return_date}}</td>
+                          <td><span class="badge bg-{% if debt.status == 'Не оплачен' %}danger{% elif debt.status == 'Частично оплачен' %}warning{% elif debt.status == 'Оплачен' %}success{% else %}secondary{% endif %} me-1"> </span>{{ debt.status}}</td>
                           <td class="text-end">
-                            <span class="dropdown">
-                              <button class="btn dropdown-toggle align-text-top" data-bs-boundary="viewport" data-bs-toggle="dropdown">Actions</button>
-                              <div class="dropdown-menu dropdown-menu-end">
-                                <a class="dropdown-item" href="#">
-                                  Action
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                  Another action
-                                </a>
-                              </div>
-                            </span>
+                              <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-{{debt.id}}">
+                                Редактировать
+                              </a>
                           </td>
                         </tr>
+                        <form method="POST" action="{% url 'debt_update' debt.id %}">
+    <div class="modal modal-blur fade" id="modal-{{debt.id}}" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Редактирование</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-lg-6">
+                <div class="mb-3">
+                      <select hidden name="debtor" required="" id="id_debtor">
+                        <option value="{{debt.debtor.id}}" selected="">{{debt.debtor}}</option>
+                      </select>
+                  <h1>{{debt.debtor}}</h1>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Размер долга</label>
+                  <input type="text" name="quantity" class="form-control" required="" id="id_quantity" value="{{debt.quantity}}">
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Количество мяса</label>
+                  <input type="text" name="amount_meat" class="form-control" required="" id="id_amount_meat" value="{{debt.amount_meat}}">
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Дата выдачи</label>
+                  <input type="date" name="created" value="{{debt.created|date:'Y-m-d'}}" class=" form-control" required="" id="id_created">
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Дата возврата</label>
+                  <input type="date" value="{{debt.return_date|date:'Y-m-d'}}" name="return_date" class="form-control" id="id_return_date">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+              Отменить
+            </a>
+              {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
                         {% endfor %}
 
                       </tbody>
@@ -74,7 +120,8 @@
                   <ul class="pagination pagination-sm">
 
                     {% for date in dates %}
-                      <li class="page-item {% if date == this_date  %} active {% endif %}"><a class="page-link" href="{% url 'datepage' date%}">{{ date }}</a></li>
+                      <li class="page-item {% if is_index %} {% elif date == this_date  %} active {% endif %}"><a class="page-link" href="{% url 'datepage' date%}">{{ date }}</a></li>
+
                     {% endfor %}
                     </ul>
                 </div>
@@ -89,19 +136,17 @@
                     <thead>
                       <tr>
                         <th><button class="table-sort" data-sort="sort-name">Имя</button></th>
-                        <th><button class="table-sort" data-sort="sort-city">Номер телефона</button></th>
                         <th><button class="table-sort" data-sort="sort-type">Размер долга</button></th>
                         <th><button class="table-sort" data-sort="sort-score">Количество мяса</button></th>
                         <th><button class="table-sort" data-sort="sort-date">Дата выдачи</button></th>
                         <th><button class="table-sort" data-sort="sort-quantity">Дата возврата</button></th>
-                        <th><button class="table-sort" data-sort="sort-progress">Прогресс</button></th>
+                        <th><button class="table-sort" data-sort="sort-progress">Прогресс оплаты</button></th>
                       </tr>
                     </thead>
                     <tbody class="table-tbody">
                     {% for debt in burning_debts %}
                       <tr>
                         <td class="sort-name">{{debt.debtor.last_name}} {{debt.debtor.first_name}}</td>
-                        <td class="sort-city">{{debt.debtor.phone_number}}</td>
                         <td class="sort-type">{{debt.quantity}} сом</td>
                         <td class="sort-score">{{debt.amount_meat}} кг</td>
                         <td class="sort-date">{{debt.created}}</td>
@@ -123,4 +168,60 @@
                     </tbody>
                   </table>
                 </div>
+
+<form method="POST" action="{% url 'datepage' this_date %}">
+    <div class="modal modal-blur fade" id="modal-report" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Новый долг</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Клиент</label>
+                  {{form.debtor}}
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Размер долга</label>
+                  {{form.quantity}}
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Количество мяса</label>
+                  {{form.amount_meat}}
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Дата выдачи</label>
+                  {{form.created}}
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Дата возврата</label>
+                  {{form.return_date}}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+              Отменить
+            </a>
+              {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Добавить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+
 {% endblock %}
