@@ -31,7 +31,6 @@ class Debt(models.Model):
     quantity = models.IntegerField("Размер долга")
     amount_meat = models.SmallIntegerField("Количество мяса")
     status = models.CharField('Статус', max_length=40, choices=DEBT_STATUS_CHOICES, default='Не оплачен')
-    progress = models.SmallIntegerField("Прогресс оплаты", default=0)
     created = models.DateField("Дата выдачи", default=datetime.today)
     return_date = models.DateField("Дата возврата", blank=True, null=True)
     updated = models.DateField("Обновлено", auto_now=True)

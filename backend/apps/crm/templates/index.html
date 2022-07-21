@@ -140,7 +140,6 @@
                         <th><button class="table-sort" data-sort="sort-score">Количество мяса</button></th>
                         <th><button class="table-sort" data-sort="sort-date">Дата выдачи</button></th>
                         <th><button class="table-sort" data-sort="sort-quantity">Дата возврата</button></th>
-                        <th><button class="table-sort" data-sort="sort-progress">Прогресс оплаты</button></th>
                       </tr>
                     </thead>
                     <tbody class="table-tbody">
@@ -152,16 +151,6 @@
                         <td class="sort-date">{{debt.created}}</td>
                         <td class="sort-quantity">{{debt.return_date}}</td>
                         <td class="sort-progress">
-                          <div class="row align-items-center">
-                            <div class="col-auto">{{debt.progress}}%</div>
-                            <div class="col">
-                              <div class="progress" style="width: 5rem">
-                                <div class="progress-bar" style="width: {{debt.progress}}%" role="progressbar" aria-valuenow="" aria-valuemin="0" aria-valuemax="100" aria-label=" Complete">
-                                  <span class="visually-hidden">90% Complete</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
                         </td>
                       </tr>
                     {% endfor %}
@@ -200,7 +189,7 @@
               <div class="col-lg-6">
                 <div class="mb-3">
                   <label class="form-label">Дата выдачи</label>
-                  {{form.created}}
+                  <input type="date" name="created" value="{% now 'Y-m-d' %}" class=" form-control" required="" id="id_created">
                 </div>
               </div>
               <div class="col-lg-6">

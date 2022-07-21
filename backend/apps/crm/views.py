@@ -9,6 +9,7 @@ from django.urls import reverse_lazy
 import datetime
 import pandas as pd
 
+
 def get_dates():
     end_date = datetime.datetime.today()
     start_date = end_date - datetime.timedelta(days=14)
@@ -40,9 +41,10 @@ class IndexPage(ListView):
         context['is_index'] = True
 
         all_debts = Debt.objects.all()
-        # for debt in all_debts:
-        #     if datetime.datetime.today().date() > debt.return_date:
-        #         debt.update(status='Просрочен')
+        for debt in all_debts:
+            if datetime.datetime.today().date() > debt.return_date:
+                debt_upd = Debt.objects.filter(id=debt.id)
+                debt_upd.update(status='Просрочен')
         return context
 
 def get_date_page(request, date):
@@ -52,9 +54,14 @@ def get_date_page(request, date):
         raise Http404()
 
     try:
-        burning_debts = Debt.objects.order_by('return_date')
+        burning_debts = Debt.objects.filter(status='Не оплачен' or 'Частично оплачен').order_by('return_date')
     except:
         burning_debts = None
+    all_debts = Debt.objects.all()
+    for debt in all_debts:
+        if datetime.datetime.today().date() > debt.return_date:
+            debt_upd = Debt.objects.filter(id=debt.id)
+            debt_upd.update(status='Просрочен')
     if request.method == "POST":
         form = DebtForm(request.POST, request.FILES)
         if form.is_valid():
@@ -76,8 +83,27 @@ class UpdateDebtView(UpdateView):
     model = Debt
     form_class = DebtForm
 
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        global before_quantity
+        before_quantity = self.object.quantity
+        return super().post(request, *args, **kwargs)
+
+
+
+    def form_valid(self, form):
+        self.object = form.save()
+        return super().form_valid(form)
+
+
     def get_success_url(self):
-        return reverse_lazy('index')
+        debt = Debt.objects.filter(id=self.object.id)
+        if self.object.quantity <= 0:
+            debt.update(status='Оплачен')
+        elif self.object.quantity < before_quantity:
+            debt.update(status='Частично оплачен')
+        return reverse_lazy('datepage', args = [self.object.created])
 
 class DebtsArchiveListView(ListView):
     model = Debt
