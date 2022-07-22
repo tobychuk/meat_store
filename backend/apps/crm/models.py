@@ -21,16 +21,17 @@ class Client(models.Model):
 
 
 class Debt(models.Model):
-    DEBT_STATUS_CHOICES = [
-        ('Не оплачен', 'Не оплачен'),
-        ('Частично оплачен', 'Частично оплачен'),
-        ('Оплачен', 'Оплачен'),
-        ('Просрочен', 'Просрочен')
-    ]
-    debtor = models.ForeignKey(Client, verbose_name='Должник', on_delete=models.CASCADE)
+    STATUS_PAID = 'paid'
+    STATUS_NOT_PAID = 'not paid'
+    DEBT_STATUSES = (
+        (STATUS_NOT_PAID, 'Не оплачен',),
+        (STATUS_PAID, 'Оплачен',),
+    )
+    debtor = models.ForeignKey(Client, verbose_name='Должник', on_delete=models.CASCADE, related_name='debts')
     quantity = models.IntegerField("Размер долга")
     amount_meat = models.SmallIntegerField("Количество мяса")
-    status = models.CharField('Статус', max_length=40, choices=DEBT_STATUS_CHOICES, default='Не оплачен')
+    status = models.CharField('Статус', max_length=40, choices=DEBT_STATUSES, default=STATUS_NOT_PAID)
+    expired = models.BooleanField('Просрочен?', default=False)
     created = models.DateField("Дата выдачи", default=datetime.today)
     return_date = models.DateField("Дата возврата", blank=True, null=True)
     updated = models.DateField("Обновлено", auto_now=True)
@@ -41,3 +42,7 @@ class Debt(models.Model):
 
     def __str__(self):
         return f"{self.debtor} - {self.quantity}"
+
+# class Paid(models.Model)
+#     debt = models.ForeignKey(Debt)
+#     amount =

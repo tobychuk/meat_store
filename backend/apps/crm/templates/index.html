@@ -38,7 +38,7 @@
                         {% for debt in debts %}
                         <tr>
                           <td></td>
-                          <td><a href="invoice.html" class="text-reset" tabindex="-1">{{debt.debtor.last_name}}  {{debt.debtor.first_name}}</a></td>
+                          <td><a href="{% url 'client_detail' debt.debtor.id %}" class="text-reset" tabindex="-1">{{debt.debtor.last_name}}  {{debt.debtor.first_name}}</a></td>
                           <td>
                             {{debt.quantity}} сом
                           </td>
@@ -46,9 +46,10 @@
                             {{ debt.amount_meat }} кг
                           </td>
                           <td>{{debt.created}}</td>
-                          <td>{{debt.return_date}}</td>
-                          <td><span class="badge bg-{% if debt.status == 'Не оплачен' %}danger{% elif debt.status == 'Частично оплачен' %}warning{% elif debt.status == 'Оплачен' %}success{% else %}secondary{% endif %} me-1"> </span>{{ debt.status}}</td>
+                          <td>{% if debt.expired %} Просрочен! {% endif %}({{debt.return_date}})</td>
+                          <td><span class="badge bg-{% if debt.status == 'not paid' %}danger{% elif debt.status == 'paid' %}success{% else %}secondary{% endif %} me-1"> </span>{{ debt.get_status_display}}</td>
                           <td class="text-end">
+
                               <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-{{debt.id}}">
                                 Редактировать
                               </a>

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Календарь</h1>
+<br>
+{% for date in dates %}
+<a href="{% url 'datepage' date %}"><button type="button" class="btn btn-light">{{date}}</button></a>
+
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="main-body">
+
+          <div class="row gutters-sm">
+            <div class="col-md-4 mb-3">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex flex-column align-items-center text-center">
+                    <div class="mt-3">
+                      <h4>{{client.first_name}} {{client.last_name}}</h4>
+                      <h4>{{client.middle_name}}</h4>
+                      <p class="text-secondary mb-1">{{client.address}}</p>
+                      <p class="text-muted font-size-sm">0{{client.phone_number}} {% if client.reserve_phone_number %}0{{client.reserve_phone_number}}{% endif %}</p>
+                  <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#modal-simple">
+                    Фото паспорта
+                  </a>
+                  <a href="#" class="btn btn-primary d-none d-sm-inline-block ms-auto" data-bs-toggle="modal" data-bs-target="#modal-report">
+                    Редактировать
+                  </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="card mb-3">
+                <div class="card-body">
+                    <h1>Список долгов</h1>
+                    <table class="table">
+                    <thead>
+                      <tr>
+                        <th><button class="table-sort" data-sort="sort-type">Размер долга</button></th>
+                        <th><button class="table-sort" data-sort="sort-score">Количество мяса</button></th>
+                        <th><button class="table-sort" data-sort="sort-date">Дата выдачи</button></th>
+                        <th><button class="table-sort" data-sort="sort-quantity">Дата возврата</button></th>
+                        <th><button class="table-sort" data-sort="sort-quantity">Статус</button></th>
+                      </tr>
+                    </thead>
+                    <tbody class="table-tbody">
+                    {% for debt in client.debts.all %}
+                      <tr>
+                        <td class="sort-type">{{debt.quantity}} сом</td>
+                        <td class="sort-score">{{debt.amount_meat}} кг</td>
+                        <td class="sort-date">{{debt.created}}</td>
+                        <td class="sort-quantity">{% if debt.expired %} Просрочен! {% endif %}({{debt.return_date}})</td>
+                        <td class="sort-quantity"><span class="badge bg-{% if debt.status == 'not paid' %}danger{% elif debt.status == 'paid' %}success{% else %}secondary{% endif %} me-1"> </span>{{debt.get_status_display}}</td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+    </div>
+
+<form method="POST" enctype="multipart/form-data" action="{% url 'client_detail' client.id %} ">
+    <div class="modal modal-blur fade" id="modal-report" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+
+            <h5 class="modal-title">Новый клиент</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Имя</label>
+                  {{form.first_name}}
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Фамилия</label>
+                  {{form.last_name}}
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Отчество</label>
+                  {{form.middle_name}}
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Телефонный номер</label>
+                  {{form.phone_number}}
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Запасной тел.номер (не обязательное поле)</label>
+                  {{form.reserve_phone_number}}
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Адрес</label>
+                  {{form.address}}
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Фото лицевой стороны паспорта</label>
+                  {{form.passport_image_first}}
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Фото задней стороны паспорта</label>
+                  {{form.passport_image_second}}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+              Отменить
+            </a>
+              {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Добавить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+<div class="modal modal-blur fade" id="modal-simple" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+<a data-fslightbox="gallery" href="">
+  <img src="{{client.passport_image_first.url}}" alt="Фото не загружено" class="rounded" style="width:500px;height:250px">
+</a>
+            <br>
+            <br>
+            <a data-fslightbox="gallery" href="">
+
+  <img src="{{client.passport_image_second.url}}" alt="Фото не загружено" class="rounded" style="width:500px;height:250px">
+</a>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn me-auto" data-bs-dismiss="modal">Закрыть</button>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}

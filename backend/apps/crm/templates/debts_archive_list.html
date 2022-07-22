@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-body">
+          <div class="container-xl">
+            <div class="card">
+              <div class="card-body">
+                <div id="table-default">
+                  <h1>Архив оплаченных долгов</h1>
+                  <br>
+                  <br>
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th><button class="table-sort" data-sort="sort-name">Имя</button></th>
+                        <th><button class="table-sort" data-sort="sort-city">Тел.номер</button></th>
+                        <th><button class="table-sort" data-sort="sort-type">Адрес</button></th>
+                        <th><button class="table-sort" data-sort="sort-score">Размер долга</button></th>
+                        <th><button class="table-sort" data-sort="sort-date">Количество мяса</button></th>
+                        <th><button class="table-sort" data-sort="sort-quantity">Дата выдачи</button></th>
+                        <th><button class="table-sort" data-sort="sort-progress">Дата возврата</button></th>
+                      </tr>
+                    </thead>
+                    <tbody class="table-tbody">
+                    {% for debt in debts %}
+                    {% if debt.status == 'Оплачен' %}
+                      <tr>
+                        <td class="sort-name">{{debt.debtor.last_name}} {{debt.debtor.first_name}} {{debt.debtor.middle_name}}</td>
+                        <td class="sort-city">{{debt.debtor.phone_number}}</td>
+                        <td class="sort-type">{{debt.debtor.address}}</td>
+                        <td class="sort-score">{{debt.quantity}}</td>
+                        <td class="sort-date">{{debt.amount_meat}}</td>
+                        <td class="sort-quantity">{{debt.created}}</td>
+                        <td class="sort-progress">{{debt.return_date}}</td>
+                      </tr>
+                    {% endif %}
+                    {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+{% endblock %}
