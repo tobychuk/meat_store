@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
 <div class="container">
     <div class="main-body">
 
@@ -11,7 +12,7 @@
                   <div class="d-flex flex-column align-items-center text-center">
                     <div class="mt-3">
                       <h4>{{client.first_name}} {{client.last_name}}</h4>
-                      <h4>{{client.middle_name}}</h4>
+                      <h4>{% if client.middle_name %}{{client.middle_name}}{% endif %}</h4>
                       <p class="text-secondary mb-1">{{client.address}}</p>
                       <p class="text-muted font-size-sm">0{{client.phone_number}} {% if client.reserve_phone_number %}0{{client.reserve_phone_number}}{% endif %}</p>
                   <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#modal-simple">
@@ -29,6 +30,28 @@
               <div class="card mb-3">
                 <div class="card-body">
                     <h1>Список долгов</h1>
+                  <br>
+                  <form method="GET">
+                    <select class="form-select" name="status" id="id_status">
+                      {% if status == 'paid' %}
+                      <option value="paid" selected="">Оплачен</option>
+                      <option value="">Не указан</option>
+                      <option value="not paid" >Не оплачен</option>
+                      {% elif status == 'not paid' %}
+                      <option value="not paid" selected="">Не оплачен</option>
+                      <option value="paid">Оплачен</option>
+                      <option value="">Не указан</option>
+                      {% else %}
+                      <option value="" selected="">Не указан</option>
+                      <option value="not paid">Не оплачен</option>
+                      <option value="paid">Оплачен</option>
+                      {% endif %}
+                    </select>
+
+                                   <button type="submit">Поиск</button>
+
+                  </form>
+                  <br>
                     <table class="table">
                     <thead>
                       <tr>
@@ -37,17 +60,104 @@
                         <th><button class="table-sort" data-sort="sort-date">Дата выдачи</button></th>
                         <th><button class="table-sort" data-sort="sort-quantity">Дата возврата</button></th>
                         <th><button class="table-sort" data-sort="sort-quantity">Статус</button></th>
+                        <th><button class="table-sort" data-sort="sort-quantity">Действия</button></th>
+
                       </tr>
                     </thead>
                     <tbody class="table-tbody">
-                    {% for debt in client.debts.all %}
+                    {% for debt in filter.qs %}
                       <tr>
                         <td class="sort-type">{{debt.quantity}} сом</td>
                         <td class="sort-score">{{debt.amount_meat}} кг</td>
                         <td class="sort-date">{{debt.created}}</td>
                         <td class="sort-quantity">{% if debt.expired %} Просрочен! {% endif %}({{debt.return_date}})</td>
                         <td class="sort-quantity"><span class="badge bg-{% if debt.status == 'not paid' %}danger{% elif debt.status == 'paid' %}success{% else %}secondary{% endif %} me-1"> </span>{{debt.get_status_display}}</td>
+                        <td>                        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-{{debt.id}}">
+                                Изменить
+                        </a> </td>
+                        <td>                 <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#modal-scrollable-{{debt.id}}">
+                    Логи
+                  </a></td>
                       </tr>
+                    <form method="POST" action="{% url 'client_debt_update' debt.id %}">
+    <div class="modal modal-blur fade" id="modal-{{debt.id}}" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Редактирование</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-lg-6">
+                <div class="mb-3">
+                      <select hidden name="debtor" required="" id="id_debtor">
+                        <option value="{{debt.debtor.id}}" selected="">{{debt.debtor}}</option>
+                      </select>
+                  <h1>{{debt.debtor}}</h1>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Размер долга</label>
+                  <input type="text" name="quantity" class="form-control" required="" id="id_quantity" value="{{debt.quantity}}">
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Количество мяса</label>
+                  <input type="text" name="amount_meat" class="form-control" required="" id="id_amount_meat" value="{{debt.amount_meat}}">
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Дата выдачи</label>
+                  <input type="date" name="created" value="{{debt.created|date:'Y-m-d'}}" class=" form-control" required="" id="id_created">
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label">Дата возврата</label>
+                  <input type="date" value="{{debt.return_date|date:'Y-m-d'}}" name="return_date" class="form-control" id="id_return_date">
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+              Отменить
+            </a>
+              {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+                    <div class="modal modal-blur fade" id="modal-scrollable-{{debt.id}}" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{debt.debtor.last_name}} {{debt.debtor.first_name}} {{debt.debtor.middle_name}}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>{{debt.created}} | Долг был создан</p>
+            <hr>
+            {% for log in debt.logs.all %}
+            <p>{{log.created}} | {{log.text}} </p>
+            <p></p>
+            <hr>
+
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
                     {% endfor %}
                     </tbody>
                   </table>

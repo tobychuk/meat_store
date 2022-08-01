@@ -16,3 +16,10 @@ class DebtAdmin(admin.ModelAdmin):
         'debtor',
         'quantity'
     ]
+
+@admin.register(Log)
+class LogAdmin(admin.ModelAdmin):
+    list_display = [
+        'id',
+        'debt',
+    ]

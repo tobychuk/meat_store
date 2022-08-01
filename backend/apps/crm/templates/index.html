@@ -13,13 +13,14 @@
                   </a>
 
                       <div class="ms-auto text-muted">
-                        Search:
+
                         <div class="ms-2 d-inline-block">
-                          <input type="text" class="form-control form-control-sm" aria-label="Search invoice">
+
                         </div>
                       </div>
                     </div>
                   </div>
+                <div id="data-table">
                   <div class="table-responsive">
                     <table class="table card-table table-vcenter text-nowrap datatable">
                       <thead>
@@ -54,6 +55,9 @@
                                 Редактировать
                               </a>
                           </td>
+                          <td><a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#modal-scrollable-{{debt.id}}">
+                    Логи
+                  </a></td>
                         </tr>
                         <form method="POST" action="{% url 'debt_update' debt.id %}">
     <div class="modal modal-blur fade" id="modal-{{debt.id}}" tabindex="-1" role="dialog" aria-hidden="true">
@@ -99,17 +103,37 @@
               </div>
             </div>
           </div>
-          <div class="modal-footer">
+          <div class="modal-footer" id="save-button">
             <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">
               Отменить
             </a>
               {% csrf_token %}
-            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <button type="submit" class="btn btn-primary" id="update-save">Сохранить</button>
           </div>
         </div>
       </div>
     </div>
   </form>
+<div class="modal modal-blur fade" id="modal-scrollable-{{debt.id}}" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{debt.debtor.last_name}} {{debt.debtor.first_name}} {{debt.debtor.middle_name}}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Долг был создан {{debt.created}}</p>
+            <hr>
+            {% for log in debt.logs.all %}
+            <p>{{log.created}} | {{log.text}} </p>
+            <p></p>
+            <hr>
+
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
                         {% endfor %}
 
                       </tbody>
@@ -118,15 +142,17 @@
                   <div class="card-footer d-flex align-items-center">
 
                   </div>
-                  <ul class="pagination pagination-sm">
+                  <ul class="pagination pagination-sm" id="pagination">
 
                     {% for date in dates %}
                       <li class="page-item {% if is_index %} {% elif date == this_date  %} active {% endif %}"><a class="page-link" href="{% url 'datepage' date%}">{{ date }}</a></li>
 
                     {% endfor %}
                     </ul>
+
                 </div>
               </div>
+  </div>
 <br>
 <br>
 <br>
@@ -166,6 +192,7 @@
           <div class="modal-header">
             <h5 class="modal-title">Новый долг</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
           </div>
           <div class="modal-body">
             <div class="row">
