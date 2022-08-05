@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from django.views.generic import ListView, UpdateView, TemplateView, View
+from django.views.generic import ListView, UpdateView, TemplateView, View, FormView
 
-from backend.apps.crm.forms import DebtForm, ClientForm
+from backend.apps.crm.forms import DebtForm, ClientForm, LoginForm
 
 from .models import Debt, Client, Log
 from .filters import DebtFilter
@@ -9,10 +9,14 @@ from django.http import HttpResponse,Http404,HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.db.models import Q
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 import datetime
 import pandas as pd
+import json
 
 
 def get_dates():
@@ -25,10 +29,12 @@ def get_dates():
     ).strftime('%Y-%m-%d').tolist()
     return result
 
-class IndexPage(ListView):
+
+class IndexPage(LoginRequiredMixin, ListView):
     model = Debt
     template_name = 'index.html'
     context_object_name = 'debts'
+    redirect_field_name = ''
 
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -55,6 +61,8 @@ class IndexPage(ListView):
                 debt_upd.update(expired=False)
         return context
 
+
+@login_required
 def get_date_page(request, date):
     try:
         debts = Debt.objects.filter(created=date)
@@ -97,7 +105,6 @@ def get_date_page(request, date):
         if datetime.datetime.strptime(el_date, '%Y-%m-%d') > datetime.datetime.today():
             dates_list.remove(el_date)
 
-
     context = {
         "debts":debts,
         "dates": dates_list,
@@ -108,7 +115,7 @@ def get_date_page(request, date):
 
     return render(request, 'index.html', context)
 
-class UpdateDebtView(UpdateView):
+class UpdateDebtView(LoginRequiredMixin, UpdateView):
     model = Debt
     form_class = DebtForm
 
@@ -128,16 +135,17 @@ class UpdateDebtView(UpdateView):
         if form.changed_data:
             for field in form.changed_data:
                 if field == 'quantity':
-                    Log.objects.create(debt=self.get_object(), text=f'Размер долга изменился с {self.get_object().quantity} сом на {form.cleaned_data["quantity"]} сом')
+                    Log.objects.create(updater=self.request.user.username,debt=self.get_object(), text=f'Размер долга изменился с {self.get_object().quantity} сом на {form.cleaned_data["quantity"]} сом')
                 if field == 'amount_meat':
-                    Log.objects.create(debt=self.get_object(), text=f'Количество мяса изменилось с {self.get_object().amount_meat} кг на {form.cleaned_data["amount_meat"]} кг')
+                    Log.objects.create(updater=self.request.user.username,debt=self.get_object(), text=f'Количество мяса изменилось с {self.get_object().amount_meat} кг на {form.cleaned_data["amount_meat"]} кг')
                 if field == 'created':
-                    Log.objects.create(debt=self.get_object(), text=f'Дата выдачи изменилась с {self.get_object().created} на {form.cleaned_data["created"]}')
+                    Log.objects.create(updater=self.request.user.username,debt=self.get_object(), text=f'Дата выдачи изменилась с {self.get_object().created} на {form.cleaned_data["created"]}')
                 if field == 'return_date':
-                    Log.objects.create(debt=self.get_object(), text=f'Дата возврата изменилась с {self.get_object().return_date} на {form.cleaned_data["return_date"]}')
+                    Log.objects.create(updater=self.request.user.username,debt=self.get_object(), text=f'Дата возврата изменилась с {self.get_object().return_date} на {form.cleaned_data["return_date"]}')
         return super().form_valid(form)
 
-class UpdateClientDebtView(UpdateView):
+
+class UpdateClientDebtView(LoginRequiredMixin, UpdateView):
     model = Debt
     form_class = DebtForm
 
@@ -167,13 +175,13 @@ class UpdateClientDebtView(UpdateView):
         return super().form_valid(form)
 
 
-class DebtsArchiveListView(ListView):
+class DebtsArchiveListView(LoginRequiredMixin, ListView):
     model = Debt
     template_name = 'debts_archive_list.html'
     context_object_name = 'debts'
 
 
-class ClientListView(ListView):
+class ClientListView(LoginRequiredMixin, ListView):
     model = Client
     template_name = 'client_list.html'
     context_object_name = 'clients'
@@ -187,7 +195,7 @@ class ClientListView(ListView):
         return context
 
 
-class SearchClientListView(ListView):
+class SearchClientListView(LoginRequiredMixin, ListView):
     model = Client
     template_name = 'client_list.html'
     context_object_name = 'clients'
@@ -212,8 +220,7 @@ class SearchClientListView(ListView):
         return context
 
 
-
-class AddClientView(View):
+class AddClientView(LoginRequiredMixin, View):
     def post(self, request):
         form = ClientForm(request.POST, request.FILES)
         if form.is_valid():
@@ -221,8 +228,7 @@ class AddClientView(View):
             instance.save()
         return redirect("clients_list")
 
-
-class CalendarView(TemplateView):
+class CalendarView(LoginRequiredMixin, TemplateView):
     template_name = 'calendar.html'
 
     def get_context_data(self, **kwargs):
@@ -241,7 +247,7 @@ class CalendarView(TemplateView):
         return redirect('datepage', date)
 
 
-class ClientDetailView(UpdateView):
+class ClientDetailView(LoginRequiredMixin, UpdateView):
     model = Client
     form_class = ClientForm
     template_name = 'client_detail.html'
@@ -264,3 +270,25 @@ class ClientDetailView(UpdateView):
         context['filter'] = f
 
         return context
+
+
+class LoginView(FormView):
+    template_name = 'login.html'
+    form_class = LoginForm
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+        username = data['username']
+        password = data['password']
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            login(self.request, user)
+            return redirect('index')
+        else:
+            context = {
+                'form':form,
+                'mistake':True
+            }
+            return render(self.request, 'login.html', context)
+

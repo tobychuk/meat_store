@@ -29,7 +29,7 @@ class Debt(models.Model):
     )
     debtor = models.ForeignKey(Client, verbose_name='Должник', on_delete=models.CASCADE, related_name='debts')
     quantity = models.IntegerField("Размер долга")
-    amount_meat = models.SmallIntegerField("Количество мяса")
+    amount_meat = models.DecimalField("Количество мяса", decimal_places=2, max_digits=10)
     status = models.CharField('Статус', max_length=40, choices=DEBT_STATUSES, default=STATUS_NOT_PAID)
     expired = models.BooleanField('Просрочен?', default=False)
     created = models.DateField("Дата выдачи")
@@ -44,6 +44,7 @@ class Debt(models.Model):
         return f"{self.debtor} - {self.quantity}"
 
 class Log(models.Model):
+    updater = models.CharField(max_length=20)
     debt = models.ForeignKey(Debt, on_delete=models.CASCADE, related_name='logs')
     text = models.TextField("Действие")
     created = models.DateTimeField("Создан", auto_now_add=True)

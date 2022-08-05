@@ -43,7 +43,7 @@
             <p>Долг был создан {{debt.created}}</p>
             <hr>
             {% for log in debt.logs.all %}
-            <p>{{log.created}} | {{log.text}} </p>
+            <p>{{log.updater}} || {{log.created}} | {{log.text}} </p>
             <p></p>
             <hr>
 

@@ -46,8 +46,8 @@
                           <td>
                             {{ debt.amount_meat }} кг
                           </td>
-                          <td>{{debt.created}}</td>
-                          <td>{% if debt.expired %} Просрочен! {% endif %}({{debt.return_date}})</td>
+                          <td>{{debt.created|date:'d F Y'}}</td>
+                          <td>{% if debt.expired %} Просрочен! {% endif %}({{debt.return_date|date:'d F Y'}})</td>
                           <td><span class="badge bg-{% if debt.status == 'not paid' %}danger{% elif debt.status == 'paid' %}success{% else %}secondary{% endif %} me-1"> </span>{{ debt.get_status_display}}</td>
                           <td class="text-end">
 
@@ -108,7 +108,7 @@
               Отменить
             </a>
               {% csrf_token %}
-            <button type="submit" class="btn btn-primary" id="update-save">Сохранить</button>
+            <button type="submit" class="btn btn-primary">Сохранить</button>
           </div>
         </div>
       </div>
@@ -118,14 +118,14 @@
       <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">{{debt.debtor.last_name}} {{debt.debtor.first_name}} {{debt.debtor.middle_name}}</h5>
+            <h5 class="modal-title">{{debt.debtor.last_name}} {{debt.debtor.first_name}} {% if debt.debtor.middle_name %}{{debt.debtor.middle_name}} {% endif %}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <p>Долг был создан {{debt.created}}</p>
             <hr>
             {% for log in debt.logs.all %}
-            <p>{{log.created}} | {{log.text}} </p>
+           <p>{{log.updater}} || {{log.created}} | {{log.text}} </p>
             <p></p>
             <hr>
 
@@ -176,7 +176,7 @@
                         <td class="sort-type">{{debt.quantity}} сом</td>
                         <td class="sort-score">{{debt.amount_meat}} кг</td>
                         <td class="sort-date">{{debt.created}}</td>
-                        <td class="sort-quantity">{{debt.return_date}}</td>
+                        <td class="sort-quantity">{{debt.return_date|date:'d F Y'}}</td>
                         <td class="sort-progress">
                         </td>
                       </tr>
@@ -241,4 +241,36 @@
   </form>
 
 
+{% endblock %}
+{% block js_scripts %}
+<script type="text/javascript">
+      function ajaxPagination() {
+      $('#data-table a.page-link').each((index, el) => {
+        $(el).click((e) => {
+          e.preventDefault()
+          let page_url = $(el).attr('href')
+          console.log ( page_url )
+
+          $.ajax({
+            url: page_url,
+            type: 'GET',
+            success: (data) => {
+              $('#data-table').empty()
+              $('#data-table').append( $(data).find('#data-table').html() )
+
+            }
+          })
+         })
+        })
+      }
+
+      $(document).ready(function() {
+        ajaxPagination()
+      })
+
+      $(document).ajaxStop(function() {
+        ajaxPagination()
+      })
+
+    </script>
 {% endblock %}

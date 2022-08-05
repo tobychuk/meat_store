@@ -16,6 +16,7 @@
     <title>Main</title>
     <!-- CSS files -->
     {% load static %}
+    {% csrf_token %}
     <link href="{% static 'css/tabler.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/tabler-flags.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/tabler-payments.min.css' %}" rel="stylesheet"/>
@@ -89,36 +90,8 @@
   <!-- JavaScript Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
   </script>
-<script type="text/javascript">
-      function ajaxPagination() {
-      $('#data-table a.page-link').each((index, el) => {
-        $(el).click((e) => {
-          e.preventDefault()
-          let page_url = $(el).attr('href')
-          console.log ( page_url )
 
-          $.ajax({
-            url: page_url,
-            type: 'GET',
-            success: (data) => {
-              $('#data-table').empty()
-              $('#data-table').append( $(data).find('#data-table').html() )
-
-            }
-          })
-         })
-        })
-      }
-
-      $(document).ready(function() {
-        ajaxPagination()
-      })
-
-      $(document).ajaxStop(function() {
-        ajaxPagination()
-      })
-
-    </script>
-
+  {% block js_scripts %}
+  {% endblock %}
   </body>
 </html>

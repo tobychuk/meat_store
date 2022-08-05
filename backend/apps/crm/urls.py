@@ -10,5 +10,6 @@ urlpatterns = [
     path('client/add', AddClientView.as_view(), name='add_client'),
     path('debts_calendar/', CalendarView.as_view(), name='calendar'),
     path('client/detail/<int:pk>', ClientDetailView.as_view(), name='client_detail'),
-    path('clients/', SearchClientListView.as_view(), name='clients_search')
+    path('clients/', SearchClientListView.as_view(), name='clients_search'),
+    path("authenticate/", LoginView.as_view(), name='sign_in')
 ]

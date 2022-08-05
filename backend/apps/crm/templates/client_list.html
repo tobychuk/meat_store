@@ -15,7 +15,7 @@
                         <div class="ms-2 d-inline-block">
 
                           <form action="{% url 'clients_search' %}">
-                          <input type="text" class="form-control form-control-sm" value="{{ search_query }}" aria-label="Search invoice" name="search">
+                          <input type="text" class="form-control form-control-sm" value="{{ search_query }}" aria-label="Search invoice" name="search" id="search_here">
                           </form>
                         </div>
                       </div>
@@ -134,4 +134,7 @@
       </div>
     </div>
   </form>
+{% endblock %}
+
+{% block js_scripts %}
 {% endblock %}
